@@ -1,0 +1,21 @@
+version: '3.5'
+
+services:
+  importers_into_ynab:
+    image: benjamincaldwell/ynab-importers:${DOCKER_TAG-latest}
+    command: python -u app.py
+    environment:
+      - YNAB_IMPORTER_EJSON_SECRET_KEY=/run/secrets/ejson/key
+      - YNAB_IMPORTER_SECRETS_FILE=/run/secrets/secrets.ejson
+      - PYTHONUNBUFFERED=0
+    secrets:
+      - source: ynab-importers-ejson-key
+        target: /run/secrets/ejson/key
+      - source: ynab-importers-secrets
+        target: /run/secrets/secrets.ejson
+
+secrets:
+  ynab-importers-ejson-key:
+    external: true
+  ynab-importers-secrets:
+    external: true

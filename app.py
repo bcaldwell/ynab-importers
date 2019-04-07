@@ -5,8 +5,10 @@ import ynab
 from pprint import pprint
 import schedule
 import time
+import os
 
-s = Secrets("./secrets.ejson")
+s = Secrets(os.environ.get(
+            "YNAB_IMPORTER_SECRETS_FILE", "./secrets.ejson"))
 
 configuration = ynab.Configuration()
 configuration.api_key['Authorization'] = s.getSecret("ynab_token")

@@ -2,29 +2,28 @@ FROM ruby:alpine3.7 as ejson
 RUN gem install ejson
 
 
-FROM python:3.7-alpine
+FROM python:3.7
 MAINTAINER benjamincaldwell
 
-RUN apk update \
-    && apk add --no-cache git openssh-client \
-    && pip install pipenv \
-    && addgroup -S -g 1001 app \
-    && adduser -S -D -h /app -u 1001 -G app app
-
+RUN pip install pipenv
+# && addgroup -S -g 1001 app \
+# && adduser -S -D -h /app -u 1001 -G app app
+ENV PYTHONUNBUFFERED=0
 COPY --from=ejson /usr/local/bundle/gems/ejson-1.2.1/build/linux-amd64/ejson /usr/bin/ejson
 
 # Creating working directory
-RUN mkdir /app/src
+RUN mkdir -p /app/src
 WORKDIR /app/src
-RUN chown -R app.app /app/
+# RUN chown -R app.app /app/
 
-USER app
 
 COPY Pipfile /app/src/Pipfile
-# COPY Pipfile.lock /app/src/Pipfile.lock
+COPY Pipfile.lock /app/src/Pipfile.lock
 
-RUN pipenv install
+RUN pipenv install --system
+# RUN pipenv lock --requirements > requirements.txt && pip install -r requirements.txt
 
 COPY . /app/src/
 
-CMD ["python", "app.py"]
+# USER app
+CMD ["python", "-u", "app.py"]

@@ -5,7 +5,8 @@ import os
 
 class Secrets:
     def __init__(self, filename):
-        secret_filename = os.environ.get("EJSON_SECRET_KEY", None)
+        secret_filename = os.environ.get(
+            "YNAB_IMPORTER_EJSON_SECRET_KEY", None)
         if secret_filename:
             file = open(secret_filename, "r")
             key = file.read()
