@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Install ci-scripts
+          command: wget -q -O - https://raw.githubusercontent.com/bcaldwell/ci-scripts/master/scripts/install.sh | sh
+
+      - run:
+          name: Build and pushing docker image
+          command: ci-scripts docker/build_and_push_image --docker-images-dockerRepo benjamincaldwell/ynab-importers
+
+  deploy:
+    docker:
+      - image: docker:18.06.0-ce
+    environment:
+      CLUSTER_DOMAIN: benjamincaldwell.ca
+
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "80:58:cd:21:56:5a:81:10:54:58:0c:a3:d1:4b:04:b8"
+      - run:
+          name: Install ci-scripts
+          command: wget -q -O - https://raw.githubusercontent.com/bcaldwell/ci-scripts/master/scripts/install.sh | sh
+
+      - run:
+          name: Deploying
+          command: ci-scripts docker/deploy --docker-swarm-stack selfops --docker-swarm-deployfile deploy/ynab-importer.yml
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
