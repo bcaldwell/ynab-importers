@@ -8,6 +8,7 @@ import ynab
 from ynab.rest import ApiException
 import time
 import requests
+import logging
 
 
 class WealthicaImporter:
@@ -23,6 +24,8 @@ class WealthicaImporter:
         self.account_mapping = Secrets.getSecret("wealthica.accountMapping")
 
         self.totp = pyotp.TOTP(self.wealthica_opt_secret)
+
+        self.logger = logging.getLogger('wealthica')
 
     def generate_hash_device(self, device_group_key, device_key):
         # source: https://github.com/amazon-archives/amazon-cognito-identity-js/blob/6b87f1a30a998072b4d98facb49dcaf8780d15b0/src/AuthenticationHelper.js#L137
@@ -93,10 +96,10 @@ class WealthicaImporter:
         try:
             r = requests.post(
                 "https://app.wealthica.com/api/institutions/sync", headers={"Authorization": self.bearer})
-            print(r.status_code)
-            time.sleep(5)
+            time.sleep(10)
         except:
-            print("Exception when calling app.wealthica.com/api/institutions\n")
+            self.logger.error(
+                "Exception when calling app.wealthica.com/api/institutions\n")
 
     def get_from_account_mapping(self, id):
         for i in self.account_mapping:
@@ -108,9 +111,9 @@ class WealthicaImporter:
         try:
             # Account list
             ynabAccounts = ynab.AccountsApi().get_accounts(self.ynab_budget_id)
-        #     pprint(ynabAccounts)
         except ApiException as e:
-            print("Exception when calling AccountsApi->get_accounts: %s\n" % e)
+            self.logger.error(
+                "Exception when calling AccountsApi->get_accounts: %s\n" % e)
             return
 
         try:
@@ -118,7 +121,8 @@ class WealthicaImporter:
                 "https://app.wealthica.com/api/institutions", headers={"Authorization": self.bearer})
             wealthicaInstitutions = wealthicaInstitutions.json()
         except:
-            print("Exception when calling app.wealthica.com/api/institutions\n")
+            self.logger.error(
+                "Exception when calling app.wealthica.com/api/institutions\n")
             return
 
         transactions = []
@@ -126,7 +130,6 @@ class WealthicaImporter:
         for a in ynabAccounts.data.accounts:
             account_mapping = self.get_from_account_mapping(a.id)
             if account_mapping:
-                print(a.name)
                 for i in wealthicaInstitutions:
                     if i['id'] == account_mapping['institutionID']:
                         if "accountID" in account_mapping:
@@ -135,8 +138,8 @@ class WealthicaImporter:
                         else:
                             currentValue = i['value']
                         delta = round(currentValue - a.balance / 1000, 2)
-                        print("current: {} last: {} delta: {}".format(
-                            currentValue, a.balance / 1000, delta))
+                        self.logger.info("[{}] current: {} last: {} delta: {}".format(a.name,
+                                                                                      currentValue, a.balance / 1000, delta))
 
                         if delta != 0:
                             transactions.append({
@@ -152,8 +155,10 @@ class WealthicaImporter:
             try:
                 ynab.TransactionsApi().bulk_create_transactions(
                     self.ynab_budget_id, {"transactions": transactions})
+                self.logger.info("wealthica done")
             except ApiException as e:
-                print("Exception when calling AccountsApi->get_accounts: %s\n" % e)
+                self.logger.error(
+                    "Exception when calling AccountsApi->get_accounts: %s\n" % e)
 
     def run(self):
         self.login()

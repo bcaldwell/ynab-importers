@@ -3,6 +3,7 @@ import pandas as pd
 from io import StringIO
 import ynab
 from ynab.rest import ApiException
+import logging
 
 
 class BrimImporter:
@@ -14,6 +15,8 @@ class BrimImporter:
             'brim.ynab_account_id').strip()
         self.brim_ynab_budget_id = Secrets.getSecret(
             'brim.ynab_budget_id').strip()
+
+        self.logger = logging.getLogger('brim')
 
     def generate_ynab_import_id(self, transaction):
         #     YNAB:-294230:2015-12-30:2
@@ -42,10 +45,9 @@ class BrimImporter:
 
         brim.get("https://brimfinancial.com/webportal/login")
         r = brim.post(login_url, data=login_data, allow_redirects=False)
-        # print(r.status_code, r.headers["Location"], r.headers["Location"]
-        #       == "https://brimfinancial.com/webportal/Home")
-        if r.headers["Location"] != "https://brimfinancial.com/webportal/Home":
-            print("Login failed")
+
+        if r.status_code != 303 or r.headers["Location"] != "https://brimfinancial.com/webportal/Home":
+            self.logger.error("Login failed")
             return
 
         brim.get("https://brimfinancial.com/webportal/Activity")
@@ -58,8 +60,7 @@ class BrimImporter:
             "type": "csv"
         }
         req = brim.post(get_csv_url, data=get_csv_data)
-        # print(req.status_code, req.text != "")
-        if req.text == "":
+        if req.text == "" or req.status_code != 200:
             print("failed to get transactions")
             return
 
@@ -67,7 +68,10 @@ class BrimImporter:
 
         download_url = "https://brimfinancial.com/webportal/" + download_csv
         r = brim.get(download_url)
-        # print(r.status_code)
+        if r.status_code != 200:
+            self.logger.error("Failed to fetch csv file")
+            return
+
         decoded_content = r.content.decode('utf-8')
 
         transactions = pd.read_csv(
@@ -98,7 +102,7 @@ class BrimImporter:
             try:
                 ynab.TransactionsApi().bulk_create_transactions(
                     self.brim_ynab_budget_id, {"transactions": ynab_transaction})
-                print("Brim Done")
+                self.logger.info("Brim Done")
             except ApiException as e:
-                print(
+                self.logger.error(
                     "Exception when calling Secrets->bulk_create_transactions: %s\n" % e)
