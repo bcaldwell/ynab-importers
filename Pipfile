@@ -16,6 +16,7 @@ schedule = "*"
 requests = "*"
 # for security issue
 # pycryptodome = ">=3.6.6"
+splitwise = "*"
 
 [requires]
 python_version = "3.7"

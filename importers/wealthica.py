@@ -158,7 +158,7 @@ class WealthicaImporter:
                 self.logger.info("wealthica done")
             except ApiException as e:
                 self.logger.error(
-                    "Exception when calling AccountsApi->get_accounts: %s\n" % e)
+                    "Exception when creating transactions: %s\n" % e)
 
     def run(self):
         self.login()

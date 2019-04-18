@@ -1,6 +1,7 @@
 from secrets import Secrets
 from importers.brim import BrimImporter
 from importers.wealthica import WealthicaImporter
+from importers.splitwise import SplitwiseImporter
 import ynab
 from pprint import pprint
 import schedule
@@ -41,6 +42,13 @@ if len(importers) == 0 or "wealthica" in importers:
     wealthica = WealthicaImporter(s)
     wealthica.run()
     schedule.every().day.at("01:30").do(wealthica.run)
+
+
+if len(importers) == 0 or "splitwise" in importers:
+    logger.info("Starting splitwise")
+    splitwise = SplitwiseImporter(s)
+    splitwise.run()
+    schedule.every().day.at("01:30").do(splitwise.run)
 
 if args.once:
     sys.exit(0)
