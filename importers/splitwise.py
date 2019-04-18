@@ -72,16 +72,16 @@ class SplitwiseImporter:
             transactions.append(transaction)
             delta += float(transaction["amount"])
 
-        transactions.append({
-            "account_id": self.ynab_splitwise_account_id,
-            "date": "2019-04-18",
-            "amount": int(delta) * -1,
-            "payee_name": "Splitwise Reimbursement",
-            "cleared": "cleared",
-            "approved": False,
-            "memo": "Splitwise reimbursement for {}".format(self.splitwise_group_name),
-            "import_id": "splitwise-reimbursement-{}".format(self.splitwise_group_id)
-        })
+#         transactions.append({
+#             "account_id": self.ynab_splitwise_account_id,
+#             "date": "2019-04-18",
+#             "amount": int(delta) * -1,
+#             "payee_name": "Splitwise Reimbursement",
+#             "cleared": "cleared",
+#             "approved": False,
+#             "memo": "Splitwise reimbursement for {}".format(self.splitwise_group_name),
+#             "import_id": "splitwise-reimbursement-{}".format(self.splitwise_group_id)
+#         })
 
         if len(transactions):
             try:
