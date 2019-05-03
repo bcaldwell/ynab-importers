@@ -149,6 +149,7 @@ class WealthicaImporter:
                                 "payee_name": "Investment Return",
                                 "cleared": "cleared",
                                 "approved": True,
+                                "import_id": "wealtha-{}".format(dateString)
                             })
 
         if len(transactions):
