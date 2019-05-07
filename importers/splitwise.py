@@ -83,7 +83,6 @@ class SplitwiseImporter:
                                  e.getDescription())
                 continue
             transactions.append(transaction)
-            print(e, transaction)
             delta += float(transaction["amount"])
 
 #         transactions.append({
