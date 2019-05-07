@@ -69,6 +69,9 @@ class SplitwiseImporter:
         delta = 0
         for e in expenses:
             transaction = self.generate_ynab_transaction(e)
+            if transaction == {}:
+                self.logger.warning(“Got empty transaction for “ + e.getDescription())
+                continue
             transactions.append(transaction)
             print(e, transaction)
             delta += float(transaction["amount"])
