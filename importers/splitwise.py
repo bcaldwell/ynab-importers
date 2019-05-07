@@ -70,6 +70,7 @@ class SplitwiseImporter:
         for e in expenses:
             transaction = self.generate_ynab_transaction(e)
             transactions.append(transaction)
+            print(e, transaction)
             delta += float(transaction["amount"])
 
 #         transactions.append({
