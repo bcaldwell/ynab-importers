@@ -18,12 +18,12 @@ class Secrets:
                     encoding='ascii')
         self.secrets = json.loads(p.stdout)
 
-    def getSecret(self, name, d=None):
-        if d is None:
-            d = self.secrets
+    def getSecret(self, name, secrets=None, default=None):
+        if secrets is None:
+            secrets = self.secrets
 
         if "." in name:
             key, rest = name.split(".", 1)
-            return self.getSecret(rest, d[key])
+            return self.getSecret(rest, secrets[key])
         else:
-            return d[name]
+            return secrets.get(name, default)

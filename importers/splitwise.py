@@ -11,11 +11,14 @@ class SplitwiseImporter:
             'splitwise.ynab_budget_id').strip()
         self.ynab_splitwise_account_id = Secrets.getSecret(
             'splitwise.ynab_splitwise_account_id').strip()
-        self.splitwise_group_name = Secrets.getSecret(
-            'splitwise.splitwise_group_name').strip()
+        self.splitwise_group_names = Secrets.getSecret(
+            'splitwise.splitwise_group_names')
+        self.dated_after = Secrets.getSecret(
+            'splitwise.import_dated_after') or None
 
         consumer_key = Secrets.getSecret('splitwise.consumer_key').strip()
-        consumer_secret = Secrets.getSecret('splitwise.consumer_secret').strip()
+        consumer_secret = Secrets.getSecret(
+            'splitwise.consumer_secret').strip()
         oauth_token = Secrets.getSecret('splitwise.oauth_token').strip()
         oauth_token_secret = Secrets.getSecret(
             'splitwise.oauth_token_secret').strip()
@@ -31,16 +34,22 @@ class SplitwiseImporter:
 
         self.currentUserId = self.splitwise.getCurrentUser().getId()
 
-        if self.splitwise_group_name:
-            groups = self.splitwise.getGroups()
-            for g in groups:
-                if g.getName() == self.splitwise_group_name:
-                    self.logger.info("Found splitwise group")
-                    self.splitwise_group_id = g.getId()
+        self.spltiwise_group_double_map = {}
+        groups = self.splitwise.getGroups()
+        for g in groups:
+            self.spltiwise_group_double_map[g.getId()] = g.getName()
+            self.spltiwise_group_double_map[g.getName()] = g.getId()
 
-            if not self.splitwise_group_id:
-                self.logger.error("Couldnt find group %s",
-                                  self.splitwise_group_name)
+        # if self.splitwise_group_name:
+        #     groups = self.splitwise.getGroups()
+        #     for g in groups:
+        #         if g.getName() == self.splitwise_group_name:
+        #             self.logger.info("Found splitwise group")
+        #             self.splitwise_group_id = g.getId()
+
+        #     if not self.splitwise_group_id:
+        #         self.logger.error("Couldnt find group %s",
+        #                           self.splitwise_group_name)
 
     def generate_ynab_transaction(self, e):
         user = None
@@ -51,39 +60,46 @@ class SplitwiseImporter:
             return {}
 
         return {
-            "account_id":
-            self.ynab_splitwise_account_id,
-            "date":
-            e.getDate(),
-            "amount":
-            int(float(user.getNetBalance()) * 1000),
-            "payee_name":
-            e.getDescription()
-            if float(user.getNetBalance()) < 0 else "Splitwise Contribution",
-            "memo":
-            "eur-may19" + ((", " + e.getDescription())
-                           if float(user.getNetBalance()) > 0 else ""),
-            "cleared":
-            "cleared",
-            "approved":
-            False,
-            "import_id":
-            e.getId()
+            "account_id": self.ynab_splitwise_account_id,
+            "date": e.getDate(),
+            "amount": int(float(user.getNetBalance()) * 1000),
+            "payee_name": (e.getDescription()
+                           if float(user.getNetBalance()) < 0 else "Splitwise Contribution"),
+            "memo": (e.getDescription()
+                     if float(user.getNetBalance()) > 0 else "") + (", splitwise-" + self.spltiwise_group_double_map[e.getGroupId()] if e.getGroupId() else ""),
+            "cleared": "cleared",
+            "approved": False,
+            "import_id": e.getId()
         }
 
     def run(self):
-        expenses = self.splitwise.getExpenses(group_id=self.splitwise_group_id)
+        # expenses = self.splitwise.getExpenses(group_id=self.splitwise_group_id)
         transactions = []
 
-        delta = 0
-        for e in expenses:
-            transaction = self.generate_ynab_transaction(e)
-            if transaction == {}:
-                self.logger.info("Got empty transaction for " +
-                                 e.getDescription())
-                continue
-            transactions.append(transaction)
-            delta += float(transaction["amount"])
+        if not len(self.splitwise_group_names):
+            self.splitwise_group_names = [None]
+
+        for g in self.splitwise_group_names:
+            # change group name to id
+            if g:
+                g = self.spltiwise_group_double_map[g]
+
+            expenses = self.splitwise.getExpenses(
+                dated_after=self.dated_after, group_id=g, limit=0)
+
+            delta = 0
+            for e in expenses:
+                if e.getDeletedAt():
+                    continue
+
+                transaction = self.generate_ynab_transaction(e)
+                if transaction == {}:
+                    # self.logger.info("Got empty transaction for " +
+                    #                  e.getDescription())
+                    continue
+
+                transactions.append(transaction)
+                delta += float(transaction["amount"])
 
 #         transactions.append({
 #             "account_id": self.ynab_splitwise_account_id,
