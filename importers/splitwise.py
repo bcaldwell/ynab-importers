@@ -2,6 +2,7 @@ from splitwise import Splitwise
 import ynab
 from ynab.rest import ApiException
 import logging
+from slugify import slugify
 
 
 class SplitwiseImporter:
@@ -65,8 +66,8 @@ class SplitwiseImporter:
             "amount": int(float(user.getNetBalance()) * 1000),
             "payee_name": (e.getDescription()
                            if float(user.getNetBalance()) < 0 else "Splitwise Contribution"),
-            "memo": (e.getDescription()
-                     if float(user.getNetBalance()) > 0 else "") + (", splitwise-" + self.spltiwise_group_double_map[e.getGroupId()] if e.getGroupId() else ""),
+            "memo": (e.getDescription() + ", "
+                     if float(user.getNetBalance()) > 0 else "") + ("splitwise-" + slugify(self.spltiwise_group_double_map[e.getGroupId()]) if e.getGroupId() else ""),
             "cleared": "cleared",
             "approved": False,
             "import_id": e.getId()
