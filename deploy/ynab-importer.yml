@@ -11,11 +11,11 @@ services:
     secrets:
       - source: ynab-importers-ejson-key
         target: /run/secrets/ejson/key
-      - source: ynab-importers-secrets-aug-22-19
+      - source: ynab-importers-secrets-oct-27-19
         target: /run/secrets/secrets.ejson
 
 secrets:
   ynab-importers-ejson-key:
     external: true
-  ynab-importers-secrets-aug-22-19:
+  ynab-importers-secrets-oct-27-19:
     external: true
