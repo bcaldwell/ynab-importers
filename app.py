@@ -1,6 +1,7 @@
 from secrets import Secrets
 from importers.brim import BrimImporter
 from importers.wealthica import WealthicaImporter
+from importers.wealthfront import WealthfrontImporter
 from importers.splitwise import SplitwiseImporter
 import ynab
 from pprint import pprint
@@ -52,6 +53,14 @@ if len(importers) == 0 or "splitwise" in importers:
         splitwise = SplitwiseImporter(s)
         splitwise.run()
         schedule.every().day.at("01:30").do(splitwise.run)
+
+if len(importers) == 0 or "wealthfront" in importers:
+    if s.getSecret('wealthfront.enable') != False:
+        logger.info("Starting wealthfront")
+        wealthfront = WealthfrontImporter(s)
+        wealthfront.run()
+        schedule.every().day.at("01:30").do(wealthfront.run)
+
 
 if args.once:
     sys.exit(0)

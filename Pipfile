@@ -18,6 +18,7 @@ requests = "*"
 # pycryptodome = ">=3.6.6"
 splitwise = "*"
 python-slugify = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.7"
