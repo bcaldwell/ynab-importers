@@ -1,4 +1,4 @@
-version: '3.5'
+version: "3.5"
 
 services:
   importers_into_ynab:
@@ -11,11 +11,11 @@ services:
     secrets:
       - source: ynab-importers-ejson-key
         target: /run/secrets/ejson/key
-      - source: ynab-importers-secrets-oct-27-19
+      - source: ynab-importers-secret-dec-05-2019
         target: /run/secrets/secrets.ejson
 
 secrets:
   ynab-importers-ejson-key:
     external: true
-  ynab-importers-secrets-oct-27-19:
+  ynab-importers-secret-dec-05-2019:
     external: true
