@@ -41,17 +41,6 @@ class SplitwiseImporter:
             self.spltiwise_group_double_map[g.getId()] = g.getName()
             self.spltiwise_group_double_map[g.getName()] = g.getId()
 
-        # if self.splitwise_group_name:
-        #     groups = self.splitwise.getGroups()
-        #     for g in groups:
-        #         if g.getName() == self.splitwise_group_name:
-        #             self.logger.info("Found splitwise group")
-        #             self.splitwise_group_id = g.getId()
-
-        #     if not self.splitwise_group_id:
-        #         self.logger.error("Couldnt find group %s",
-        #                           self.splitwise_group_name)
-
     def generate_ynab_transaction(self, e):
         user = None
         for u in e.getUsers():
@@ -78,6 +67,7 @@ class SplitwiseImporter:
         transactions = []
 
         if not len(self.splitwise_group_names):
+            # None will get all groups
             self.splitwise_group_names = [None]
 
         for g in self.splitwise_group_names:
@@ -101,17 +91,6 @@ class SplitwiseImporter:
 
                 transactions.append(transaction)
                 delta += float(transaction["amount"])
-
-#         transactions.append({
-#             "account_id": self.ynab_splitwise_account_id,
-#             "date": "2019-04-18",
-#             "amount": int(delta) * -1,
-#             "payee_name": "Splitwise Reimbursement",
-#             "cleared": "cleared",
-#             "approved": False,
-#             "memo": "Splitwise reimbursement for {}".format(self.splitwise_group_name),
-#             "import_id": "splitwise-reimbursement-{}".format(self.splitwise_group_id)
-#         })
 
         if len(transactions):
             try:
