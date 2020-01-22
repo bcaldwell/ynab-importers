@@ -33,18 +33,18 @@ configuration.api_key['Authorization'] = s.getSecret("ynab_token")
 configuration.api_key_prefix['Authorization'] = 'Bearer'
 
 if len(importers) == 0 or "brim" in importers:
-    if s.getSecret('splitwise.enable') != False:
+    if s.getSecret('brim.enable') != False:
         logger.info("Starting brim")
         brim = BrimImporter(s)
         brim.run()
-        schedule.every().day.at("01:30").do(brim.run)
+        schedule.every().day.at("23:30").do(brim.run)
 
 if len(importers) == 0 or "wealthica" in importers:
     if s.getSecret('wealthica.enable') != False:
         logger.info("Starting wealthica")
         wealthica = WealthicaImporter(s)
         wealthica.run()
-        schedule.every().day.at("01:30").do(wealthica.run)
+        schedule.every().day.at("23:30").do(wealthica.run)
 
 
 if len(importers) == 0 or "splitwise" in importers:
@@ -52,14 +52,14 @@ if len(importers) == 0 or "splitwise" in importers:
         logger.info("Starting splitwise")
         splitwise = SplitwiseImporter(s)
         splitwise.run()
-        schedule.every().day.at("01:30").do(splitwise.run)
+        schedule.every().hour.do(splitwise.run)
 
 if len(importers) == 0 or "wealthfront" in importers:
     if s.getSecret('wealthfront.enable') != False:
         logger.info("Starting wealthfront")
         wealthfront = WealthfrontImporter(s)
         wealthfront.run()
-        schedule.every().day.at("01:30").do(wealthfront.run)
+        schedule.every().day.at("23:30").do(wealthfront.run)
 
 
 if args.once:
