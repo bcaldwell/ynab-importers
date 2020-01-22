@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ynab-importers
+  namespace: selfops
+  labels:
+    app: selfops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ynab-importers
+  template:
+    metadata:
+      labels:
+        app: ynab-importers
+    spec:
+      containers:
+        - name: ynab-importers
+          image: benjamincaldwell/ynab-importers:latest
+          imagePullPolicy: Always
+          command: ["python", "-u", "app.py"]
+          env:
+            - name: YNAB_IMPORTER_EJSON_SECRET_KEY
+              value: /var/run/secrets/ejson/ejson-key
+            - name: YNAB_IMPORTER_SECRETS_FILE
+              value: /app/src/secrets.ejson
+            - name: PYTHONUNBUFFERED
+              value: "0"
+          volumeMounts:
+            - name: secrets-volume
+              mountPath: /app/src/secrets.ejson
+              subPath: secrets.ejson
+            - name: ejson-key-volume
+              mountPath: /var/run/secrets/ejson
+
+      volumes:
+        - name: secrets-volume
+          secret:
+            secretName: ynab-importers-secrets
+        - name: ejson-key-volume
+          secret:
+            secretName: selfops-ejson-key
