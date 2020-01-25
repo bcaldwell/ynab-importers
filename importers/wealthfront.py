@@ -128,8 +128,10 @@ class WealthfrontImporter:
         for a in ynabAccounts.data.accounts:
             account_mapping = self.get_account_mapping_for_ynab_id(a.id)
             if account_mapping:
+                found = False
                 for i in all_accounts:
                     if str(i['accountId']) == account_mapping['account_id']:
+                        found = True
 
                         currentValue = i['accountValueSummary']["totalValue"]
                         transaction = self.create_transaction(
@@ -137,14 +139,20 @@ class WealthfrontImporter:
                         if transaction:
                             transactions.append(transaction)
 
-                for i in external_accounts["linkStatuses"][0]["accounts"]:
-                    if i['externalAccountId'] == account_mapping['account_id']:
+                for linkStatus in external_accounts["linkStatuses"]:
+                    for i in linkStatus["accounts"]:
+                        if i['externalAccountId'] == account_mapping['account_id']:
+                            found = True
 
-                        currentValue = i['marketValue']
-                        transaction = self.create_transaction(
-                            dateString, currentValue, a)
-                        if transaction:
-                            transactions.append(transaction)
+                            currentValue = i['marketValue']
+                            transaction = self.create_transaction(
+                                dateString, currentValue, a)
+                            if transaction:
+                                transactions.append(transaction)
+
+                if not found:
+                    self.logger.warn(
+                        "Failed to find wealthfront account for id %s\n" % account_mapping['account_id'])
 
         if len(transactions):
             try:
