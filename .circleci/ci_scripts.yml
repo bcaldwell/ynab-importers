@@ -1,7 +1,7 @@
 kubernetes:
   deploy:
     repo: git@github.com:bcaldwell/k8s-config.git
-    configFolder: selfops/selfops
+    configFolder: selfops/ynab-importers
     namespace: selfops
     helmChart: deploy/ynab-importers
     releaseName: ynab-importers

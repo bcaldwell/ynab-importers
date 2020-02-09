@@ -43,5 +43,5 @@ affinity: {}
 
 volumes:
   secrets:
-    ejsonKey: ejson-key-volume
+    ejsonKey: ejson-key-secret
     ynabImporters: ynab-importers-secrets

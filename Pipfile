@@ -14,8 +14,6 @@ warrant = "*"
 pyotp = "*"
 schedule = "*"
 requests = "*"
-# for security issue
-# pycryptodome = ">=3.6.6"
 splitwise = "*"
 python-slugify = "*"
 lxml = "*"
