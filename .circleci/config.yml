@@ -19,14 +19,16 @@ jobs:
       - image: benjamincaldwell/ci-scripts
 
     environment:
-      CLUSTER_DOMAIN: benjamincaldwell.ca
+      CI_SCRIPTS_CONFIG: ./.circleci/ci_scripts.yml
 
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "80:58:cd:21:56:5a:81:10:54:58:0c:a3:d1:4b:04:b8"
+            # k8s cluster
             - "46:38:75:f2:09:9f:c5:8b:84:32:4f:02:66:c6:5c:6b"
+            # github deploy key
+            - "b4:db:e5:d9:77:38:e8:0d:18:32:60:2e:ec:44:e4:5c"
 
       - run:
           name: Deploying
