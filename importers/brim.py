@@ -56,7 +56,7 @@ class BrimImporter:
             "page": 1,
             "cardid": self.brim_card_id,
             "date_filter": 60,
-            "showpending": "yes",
+            "showpending": "no",
             "type": "csv"
         }
         req = brim.post(get_csv_url, data=get_csv_data)
