@@ -47,3 +47,7 @@ workflows:
       - deploy:
           requires:
             - release-docker
+        filters:
+          branches:
+            only: master
+        context: kubernetes
