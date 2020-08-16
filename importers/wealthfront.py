@@ -41,6 +41,9 @@ class WealthfrontImporter:
         self.session = requests.Session()
 
     def login(self):
+        # get login screen to set token
+        self.session.get(self.login_url)
+
         login_xsrf = urllib.parse.unquote(
             self.session.cookies.get_dict()["login_xsrf"])
 
@@ -56,6 +59,7 @@ class WealthfrontImporter:
 
         # todo: check if mfa is needed
         mfa_code = self.totp.now()
+        # mfa_code = input()
 
         mfa_xsrf = urllib.parse.unquote(
             self.session.cookies.get_dict()["xsrf"])
