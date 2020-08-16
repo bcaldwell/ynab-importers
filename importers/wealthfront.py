@@ -55,7 +55,8 @@ class WealthfrontImporter:
             "sessionType": "WEB",
         })
 
-        # self.logger.info(login_post.json())
+        if login_post.status_code != 200:
+            self.logger.info(login_post.json())
 
         # todo: check if mfa is needed
         mfa_code = self.totp.now()
