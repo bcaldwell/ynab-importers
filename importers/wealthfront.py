@@ -41,9 +41,6 @@ class WealthfrontImporter:
         self.session = requests.Session()
 
     def login(self):
-
-        login_page = self.session.get(self.login_url)
-
         login_xsrf = urllib.parse.unquote(
             self.session.cookies.get_dict()["login_xsrf"])
 
@@ -59,7 +56,6 @@ class WealthfrontImporter:
 
         # todo: check if mfa is needed
         mfa_code = self.totp.now()
-        # mfa_code = input()
 
         mfa_xsrf = urllib.parse.unquote(
             self.session.cookies.get_dict()["xsrf"])
@@ -72,7 +68,7 @@ class WealthfrontImporter:
         })
 
         # print(mfa_post.status_code)
-        self.logger.info(mfa_post.json())
+        # self.logger.info(mfa_post.json())
         # print(login_tree.xpath('//div[@data-login-xsrf=*]'))
 
     def get_account_mapping_for_ynab_id(self, id):
@@ -82,7 +78,7 @@ class WealthfrontImporter:
         return None
 
     def create_transaction(self, dateString, currentValue,  a):
-        delta = round(currentValue - a.balance / 1000, 2)
+        delta = round(currentValue - a.cleared_balance / 1000, 2)
         self.logger.info("[{}] current: {} last: {} delta: {}".format(a.name,
                                                                       currentValue, a.balance / 1000, delta))
 
