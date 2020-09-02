@@ -21,9 +21,7 @@ COPY Pipfile /app/src/Pipfile
 COPY Pipfile.lock /app/src/Pipfile.lock
 
 # set timezone to pst
-RUN rm -rf /etc/localtime && \
-    ln -s /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
-    pipenv install --system
+RUN pipenv install --system
 # RUN pipenv lock --requirements > requirements.txt && pip install -r requirements.txt
 
 COPY . /app/src/
