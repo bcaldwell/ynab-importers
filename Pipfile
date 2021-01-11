@@ -7,7 +7,7 @@ verify_ssl = true
 autopep8 = "*"
 
 [packages]
-ynab = {editable = true,git = "https://github.com/deanmcgregor/ynab-python.git"}
+ynab-python = {editable = true,git = "https://github.com/deanmcgregor/ynab-python.git"}
 pandas = "*"
 boto3 = "*"
 warrant = "*"

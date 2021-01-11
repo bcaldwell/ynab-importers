@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9c4583efdb13e2b784d45865622824796a815642e90dd3d8f37080bc0e948f14"
+            "sha256": "f3a9b9e30cf5ed92ac3e7d8e0b6c8ebd9a0ddacd68c6eb95e63126cfb43e977c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -319,7 +319,7 @@
             "index": "pypi",
             "version": "==0.6.1"
         },
-        "ynab": {
+        "ynab-python": {
             "editable": true,
             "git": "https://github.com/deanmcgregor/ynab-python.git",
             "ref": "83b533589e4ef7c979f15ab0b6e0bfa8e6cd2673"
