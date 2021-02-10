@@ -5,9 +5,10 @@ verify_ssl = true
 
 [dev-packages]
 autopep8 = "*"
+flask = "*"
 
 [packages]
-ynab-python = {editable = true,git = "https://github.com/deanmcgregor/ynab-python.git"}
+ynab-sdk = "*"
 pandas = "*"
 boto3 = "*"
 warrant = "*"
@@ -17,6 +18,8 @@ requests = "*"
 splitwise = "*"
 python-slugify = "*"
 lxml = "*"
+pycryptodome = "*"
+plaid-python = "*"
 
 [requires]
 python_version = "3"

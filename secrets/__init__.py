@@ -18,7 +18,7 @@ class Secrets:
                     encoding='ascii')
         self.secrets = json.loads(p.stdout)
 
-    def getSecret(self, name, secrets=None, default=None):
+    def getSecret(self, name, secrets=None, default=""):
         if secrets is None:
             secrets = self.secrets
 

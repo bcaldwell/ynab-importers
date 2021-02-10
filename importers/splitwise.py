@@ -1,8 +1,9 @@
 from splitwise import Splitwise
-import ynab
-from ynab.rest import ApiException
 import logging
 from slugify import slugify
+
+from ynab_sdk import YNAB
+from ynab_sdk.api.models.requests.transaction import TransactionRequest
 
 
 class SplitwiseImporter:
@@ -41,6 +42,10 @@ class SplitwiseImporter:
             self.spltiwise_group_double_map[g.getId()] = g.getName()
             self.spltiwise_group_double_map[g.getName()] = g.getId()
 
+        self.ynab_token = Secrets.getSecret(
+            "ynab_token").strip()
+        self.ynabClient = YNAB(self.ynab_token)
+
     def generate_ynab_transaction(self, e):
         user = None
         for u in e.getUsers():
@@ -49,18 +54,22 @@ class SplitwiseImporter:
         if not user:
             return {}
 
-        return {
-            "account_id": self.ynab_splitwise_account_id,
-            "date": e.getDate(),
-            "amount": int(float(user.getNetBalance()) * 1000),
-            "payee_name": (e.getDescription()
-                           if float(user.getNetBalance()) < 0 else "Splitwise Contribution"),
-            "memo": (e.getDescription() + ", "
-                     if float(user.getNetBalance()) > 0 else "") + ("splitwise-" + slugify(self.spltiwise_group_double_map[e.getGroupId()]) if e.getGroupId() else ""),
-            "cleared": "cleared",
-            "approved": False,
-            "import_id": e.getId()
-        }
+        memo_parts = [e.getDescription()]
+        if e.getGroupId():
+            memo_parts.append(
+                "splitwise-" + slugify(self.spltiwise_group_double_map[e.getGroupId()]))
+
+        return TransactionRequest(
+            self.ynab_splitwise_account_id,
+            e.getDate(),
+            int(float(user.getNetBalance()) * 1000),
+            payee_name=(e.getDescription()
+                        if float(user.getNetBalance()) < 0 else "Splitwise Contribution"),
+            memo=" ,".join(memo_parts),
+            cleared="cleared",
+            approved=False,
+            import_id=e.getId()
+        )
 
     def run(self):
         # expenses = self.splitwise.getExpenses(group_id=self.splitwise_group_id)
@@ -90,13 +99,13 @@ class SplitwiseImporter:
                     continue
 
                 transactions.append(transaction)
-                delta += float(transaction["amount"])
+                delta += float(transaction.amount)
 
         if len(transactions):
             try:
-                ynab.TransactionsApi().bulk_create_transactions(
-                    self.ynab_budget_id, {"transactions": transactions})
+                self.ynabClient.transactions.create_transactions(
+                    self.ynab_budget_id, transactions)
                 self.logger.info("splitwise done")
-            except ApiException as e:
+            except Exception as e:
                 self.logger.error(
-                    "Exception when creating transactions: %s\n" % e)
+                    "Exception when calling ynab->create_transactions: %s\n" % e)

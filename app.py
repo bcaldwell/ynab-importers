@@ -1,9 +1,5 @@
 from secrets import Secrets
-from importers.brim import BrimImporter
-from importers.wealthica import WealthicaImporter
-from importers.wealthfront import WealthfrontImporter
-from importers.splitwise import SplitwiseImporter
-import ynab
+import importers
 from pprint import pprint
 import schedule
 import time
@@ -19,7 +15,7 @@ parser.add_argument('--once', default=False, action='store_true',
                     help="Disable cron and only run the importer once.")
 
 args = parser.parse_args()
-importers = list(map(lambda x: x.strip().lower(), args.importers))
+importers_to_run = list(map(lambda x: x.strip().lower(), args.importers))
 
 logger = logging.getLogger("YNAB Importer")
 
@@ -28,38 +24,26 @@ s = Secrets(os.environ.get(
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"),
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-configuration = ynab.Configuration()
-configuration.api_key['Authorization'] = s.getSecret("ynab_token")
-configuration.api_key_prefix['Authorization'] = 'Bearer'
-
-if len(importers) == 0 or "brim" in importers:
+if len(importers_to_run) == 0 or "brim" in importers_to_run:
     if s.getSecret('brim.enable') != False:
         logger.info("Starting brim")
-        brim = BrimImporter(s)
+        brim = importers.BrimImporter(s)
         brim.run()
         schedule.every().day.at("23:30").do(brim.run)
 
-if len(importers) == 0 or "wealthica" in importers:
-    if s.getSecret('wealthica.enable') != False:
-        logger.info("Starting wealthica")
-        wealthica = WealthicaImporter(s)
-        wealthica.run()
-        schedule.every().day.at("23:30").do(wealthica.run)
-
-
-if len(importers) == 0 or "splitwise" in importers:
+if len(importers_to_run) == 0 or "splitwise" in importers_to_run:
     if s.getSecret('splitwise.enable') != False:
         logger.info("Starting splitwise")
-        splitwise = SplitwiseImporter(s)
+        splitwise = importers.SplitwiseImporter(s)
         splitwise.run()
         schedule.every().hour.do(splitwise.run)
 
-if len(importers) == 0 or "wealthfront" in importers:
-    if s.getSecret('wealthfront.enable') != False:
-        logger.info("Starting wealthfront")
-        wealthfront = WealthfrontImporter(s)
-        wealthfront.run()
-        schedule.every().day.at("23:30").do(wealthfront.run)
+if len(importers_to_run) == 0 or "plaid" in importers_to_run:
+    if s.getSecret('plaid.enable') != False:
+        logger.info("Starting plaid")
+        plaid = importers.PlaidImporter(s)
+        plaid.run()
+        schedule.every().day.at("23:30").do(plaid.run)
 
 
 if args.once:

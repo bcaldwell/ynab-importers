@@ -103,7 +103,7 @@ class WealthfrontImporter:
         try:
             # Account list
             ynabAccounts = ynab.AccountsApi().get_accounts(self.ynab_budget_id)
-        except ApiException as e:
+        except Exception as e:
             self.logger.error(
                 "Exception when calling AccountsApi->get_accounts: %s\n" % e)
             return
@@ -160,7 +160,7 @@ class WealthfrontImporter:
                 ynab.TransactionsApi().bulk_create_transactions(
                     self.ynab_budget_id, {"transactions": transactions})
                 self.logger.info("wealthica done")
-            except ApiException as e:
+            except Exception as e:
                 self.logger.error(
                     "Exception when creating transactions: %s\n" % e)
 

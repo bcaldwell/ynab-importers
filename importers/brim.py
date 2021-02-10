@@ -1,20 +1,24 @@
 import requests
 import pandas as pd
 from io import StringIO
-import ynab
-from ynab.rest import ApiException
 import logging
+from ynab_sdk import YNAB
+from ynab_sdk.api.models.requests.transaction import TransactionRequest
 
 
 class BrimImporter:
-    def __init__(self, Secrets):
-        self.brim_username = Secrets.getSecret('brim.username').strip()
-        self.brim_password = Secrets.getSecret('brim.password').strip()
-        self.brim_card_id = Secrets.getSecret('brim.card_id').strip()
-        self.brim_ynab_account_id = Secrets.getSecret(
+    def __init__(self, secrets):
+        self.brim_username = secrets.getSecret('brim.username').strip()
+        self.brim_password = secrets.getSecret('brim.password').strip()
+        self.brim_card_id = secrets.getSecret('brim.card_id').strip()
+        self.brim_ynab_account_id = secrets.getSecret(
             'brim.ynab_account_id').strip()
-        self.brim_ynab_budget_id = Secrets.getSecret(
+        self.brim_ynab_budget_id = secrets.getSecret(
             'brim.ynab_budget_id').strip()
+
+        self.ynab_token = secrets.getSecret(
+            "ynab_token").strip()
+        self.ynabClient = YNAB(self.ynab_token)
 
         self.logger = logging.getLogger('brim')
 
@@ -23,15 +27,15 @@ class BrimImporter:
         return "YNAB:{}:{}:{}".format(transaction["ynabAmount"], transaction["Transaction Date"], transaction["import_id_occurrence"])
 
     def generate_yanb_transaction(self, transaction):
-        return {
-            "account_id": self.brim_ynab_account_id,
-            "date": transaction["Transaction Date"],
-            "amount": int(transaction["ynabAmount"]),
-            "payee_name": transaction["Description"],
-            "cleared": "cleared",
-            "approved": False,
-            "import_id": transaction["import_id"]
-        }
+        return TransactionRequest(
+            self.brim_ynab_account_id,
+            transaction["Transaction Date"],
+            int(transaction["ynabAmount"]),
+            payee_name=transaction["Description"],
+            cleared="cleared",
+            approved=False,
+            import_id=transaction["import_id"]
+        )
 
     def run(self):
         brim = requests.Session()
@@ -100,9 +104,9 @@ class BrimImporter:
 
         if len(transactions):
             try:
-                ynab.TransactionsApi().bulk_create_transactions(
-                    self.brim_ynab_budget_id, {"transactions": ynab_transaction})
+                self.ynabClient.transactions.create_transactions(
+                    self.brim_ynab_budget_id, ynab_transaction)
                 self.logger.info("Brim Done")
-            except ApiException as e:
+            except Exception as e:
                 self.logger.error(
-                    "Exception when calling Secrets->bulk_create_transactions: %s\n" % e)
+                    "Exception when calling ynab->create_transactions: %s\n" % e)
