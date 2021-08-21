@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 autopep8 = "*"
 flask = "*"
+black = "*"
 
 [packages]
 ynab-sdk = "*"
@@ -23,3 +24,6 @@ plaid-python = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true
