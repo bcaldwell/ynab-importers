@@ -9,7 +9,7 @@ RUN pip install pipenv
 # && addgroup -S -g 1001 app \
 # && adduser -S -D -h /app -u 1001 -G app app
 ENV PYTHONUNBUFFERED=0
-COPY --from=ejson /usr/local/bundle/gems/ejson-1.2.1/build/linux-amd64/ejson /usr/bin/ejson
+COPY --from=ejson /usr/local/bundle/gems/ejson-1.3.0/build/linux-amd64/ejson /usr/bin/ejson
 
 # Creating working directory
 RUN mkdir -p /app/src
