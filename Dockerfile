@@ -5,7 +5,7 @@ RUN gem install ejson
 FROM python:3.9
 LABEL author="benjamincaldwell"
 
-RUN pip install pipenv
+RUN  (rm /usr/bin/lsb_release || echo 0) && pip install pipenv
 # && addgroup -S -g 1001 app \
 # && adduser -S -D -h /app -u 1001 -G app app
 ENV PYTHONUNBUFFERED=0
