@@ -2,7 +2,7 @@ FROM ruby:alpine3.7 as ejson
 RUN gem install ejson
 
 
-FROM python:3.7
+FROM python:3.9
 LABEL author="benjamincaldwell"
 
 RUN pip install pipenv
