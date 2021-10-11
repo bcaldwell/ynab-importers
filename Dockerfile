@@ -1,5 +1,7 @@
-FROM ruby:alpine3.7 as ejson
-RUN gem install ejson
+FROM alpine as ejson
+ARG TARGETPLATFORM
+RUN wget -O /ejson "https://github.com/Shopify/ejson/releases/download/v1.3.0/${TARGETPLATFORM/\//-}" \
+    && chmod +x /ejson
 
 
 FROM python:3.9
@@ -9,7 +11,7 @@ RUN  (rm /usr/bin/lsb_release || echo 0) && pip install pipenv
 # && addgroup -S -g 1001 app \
 # && adduser -S -D -h /app -u 1001 -G app app
 ENV PYTHONUNBUFFERED=0
-COPY --from=ejson /usr/local/bundle/gems/ejson-1.3.0/build/linux-amd64/ejson /usr/bin/ejson
+COPY --from=ejson /ejson /usr/bin/ejson
 
 # Creating working directory
 RUN mkdir -p /app/src
