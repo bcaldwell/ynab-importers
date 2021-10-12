@@ -7,26 +7,27 @@ RUN wget -O /ejson "https://github.com/Shopify/ejson/releases/download/v1.3.0/${
 FROM python:3.9
 LABEL author="benjamincaldwell"
 
-RUN  (rm /usr/bin/lsb_release || echo 0) && pip install pipenv
-# && addgroup -S -g 1001 app \
-# && adduser -S -D -h /app -u 1001 -G app app
-ENV PYTHONUNBUFFERED=0
 COPY --from=ejson /ejson /usr/bin/ejson
 
-# Creating working directory
-RUN mkdir -p /app/src
-WORKDIR /app/src
-# RUN chown -R app.app /app/
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100
 
+# System deps:
+RUN pip install poetry
 
-COPY Pipfile /app/src/Pipfile
-COPY Pipfile.lock /app/src/Pipfile.lock
+# Copy only requirements to cache them in docker layer
+WORKDIR /code
+COPY poetry.lock pyproject.toml /code/
 
-# set timezone to pst
-RUN pipenv install --system
-# RUN pipenv lock --requirements > requirements.txt && pip install -r requirements.txt
+# Project initialization:
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev --no-interaction --no-ansi
 
-COPY . /app/src/
+COPY . /code/
 
 # USER app
 CMD ["python", "-u", "app.py"]
