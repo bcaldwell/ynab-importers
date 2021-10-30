@@ -29,7 +29,7 @@ if len(importers_to_run) == 0 or "brim" in importers_to_run:
         logger.info("Starting brim")
         brim = importers.BrimImporter(s)
         brim.run()
-        schedule.every().day.at("23:30").do(brim.run)
+        schedule.every().day.at("22:00").do(brim.run)
 
 if len(importers_to_run) == 0 or "splitwise" in importers_to_run:
     if s.getSecret('splitwise.enable') != False:
