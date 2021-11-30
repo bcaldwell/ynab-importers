@@ -23,8 +23,8 @@ class BrimImporter:
         self.logger = logging.getLogger('brim')
 
     def generate_ynab_import_id(self, transaction):
-        #     YNAB:-294230:2015-12-30:2
-        return "YNAB:{}:{}:{}".format(transaction["ynabAmount"], transaction["Transaction Date"], transaction["import_id_occurrence"])
+        #     YNAB:2015-12-30:Payee:-294230:2
+        return "YNAB:{}:{}:{}:{}".format(transaction["Transaction Date"], transaction["Description"], transaction["ynabAmount"], transaction["import_id_occurrence"])
 
     def generate_yanb_transaction(self, transaction):
         return TransactionRequest(
@@ -60,7 +60,7 @@ class BrimImporter:
             "page": 1,
             "cardid": self.brim_card_id,
             "date_filter": 60,
-            "showpending": "no",
+            "showpending": "yes",
             "type": "csv"
         }
         req = brim.post(get_csv_url, data=get_csv_data)
@@ -90,7 +90,7 @@ class BrimImporter:
         transactions["ynabAmount"] = (
             transactions["Amount"] * -1000).astype(int)
         transactions['import_id_occurrence'] = transactions.groupby(
-            ['ynabAmount', "Transaction Date"])["ynabAmount"].rank(method="first").astype(int)
+            ['ynabAmount', "Transaction Date", "Description"])["ynabAmount"].rank(method="first").astype(int)
         transactions["import_id"] = transactions.apply(
             self.generate_ynab_import_id, axis=1)
 
